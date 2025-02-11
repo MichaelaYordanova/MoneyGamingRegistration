@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Using Linux for better performance
 
     steps:
       - name: Checkout Code
@@ -17,6 +17,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
+          cache: maven  # Cache dependencies for faster builds
 
       - name: Cache Maven dependencies
         uses: actions/cache@v3
@@ -26,14 +27,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install Firefox and GeckoDriver
+      - name: Install Firefox and GeckoDriver (Stable Version)
         run: |
           sudo apt update
-          sudo apt install -y firefox
-          firefox --version
+          sudo apt install -y firefox  # Install latest stable Firefox
           wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
           tar -xzf geckodriver-linux64.tar.gz
           sudo mv geckodriver /usr/local/bin/
+          firefox --version
           geckodriver --version
 
       - name: Build with Maven
