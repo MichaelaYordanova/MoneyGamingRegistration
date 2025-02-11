@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Using Linux for better performance
 
     steps:
       - name: Checkout Code
@@ -17,6 +17,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
+          cache: maven  # Cache dependencies for faster builds
 
       - name: Cache Maven dependencies
         uses: actions/cache@v3
@@ -26,12 +27,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install Firefox and GeckoDriver
+      - name: Remove Snap Firefox and Install Firefox from PPA
         run: |
+          sudo apt update
+          sudo snap remove firefox || true  # Remove Snap Firefox if it exists
+          sudo apt purge snapd -y  # Remove Snap completely
+          sudo rm -rf /var/cache/snapd/  # Clean Snap cache
+          echo "Installing Firefox from Mozilla PPA..."
+          sudo add-apt-repository -y ppa:mozillateam/ppa
+          echo 'Package: *' | sudo tee /etc/apt/preferences.d/mozilla-firefox
+          echo 'Pin: release o=LP-PPA-mozillateam' | sudo tee -a /etc/apt/preferences.d/mozilla-firefox
+          echo 'Pin-Priority: 1001' | sudo tee -a /etc/apt/preferences.d/mozilla-firefox
           sudo apt update
           sudo apt install -y firefox
           firefox --version
-          wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
+
+      - name: Install GeckoDriver
+        run: |
+          sudo apt install -y jq  # Ensure jq is installed for JSON parsing
+          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r ".tag_name")
+          echo "Latest Geckodriver Version: $GECKODRIVER_VERSION"
+          wget -q "https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-linux64.tar.gz"
           tar -xzf geckodriver-linux64.tar.gz
           sudo mv geckodriver /usr/local/bin/
           geckodriver --version
