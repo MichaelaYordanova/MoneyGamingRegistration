@@ -1,43 +1,42 @@
-name: Java Selenium CI
+name: CI Workflow
 
 on:
   pull_request:
-    branches: [ main ]
+    branches:
+      - main 
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Running on the latest Ubuntu VM
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      # 1. Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      # 2. Set up JDK 8 with the AdoptOpenJDK distribution
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          java-version: '8' 
+          distribution: 'adoptopenjdk'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Install Firefox and GeckoDriver
+      # 3. Install Firefox
+      - name: Install Firefox
         run: |
-          sudo apt update
-          sudo apt install -y firefox
-          firefox --version
-          wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
-          tar -xzf geckodriver-linux64.tar.gz
-          sudo mv geckodriver /usr/local/bin/
-          geckodriver --version
+          sudo apt-get update
+          sudo apt-get install -y firefox
 
-      - name: Build with Maven
-        run: mvn clean install
+      # 4. Set up Maven 
+      - name: Set up Maven
+        uses: actions/setup-java@v2
+        with:
+          maven-version: '3.5.1' 
 
-      - name: Run Selenium Tests
+      # 5. Install dependencies (Maven)
+      - name: Install dependencies (Maven)
+        run: mvn install
+
+      # 6. Run TestNG tests using Maven
+      - name: Run TestNG tests
         run: mvn test
