@@ -26,14 +26,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install Firefox and GeckoDriver
+      - name: Manually Install Firefox and GeckoDriver (Fix Snap Issues)
         run: |
           sudo apt update
-          sudo apt install -y firefox
-          firefox --version
+          sudo apt remove --purge firefox snapd -y || true  # Remove conflicting snap version
+          sudo apt install -y firefox-esr  # Install Firefox ESR version (more stable)
           wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
           tar -xzf geckodriver-linux64.tar.gz
           sudo mv geckodriver /usr/local/bin/
+          firefox --version
           geckodriver --version
 
       - name: Build with Maven
