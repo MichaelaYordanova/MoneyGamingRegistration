@@ -79,4 +79,6 @@ public class UserRegistration {
             throw new AssertionError(errorMessage + " Expected: '" + expected + "' but found: '" + errorElement.getText() + "'");
         }
     }
+    // Testing CI/CD setup
+
 }
