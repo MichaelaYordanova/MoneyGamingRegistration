@@ -1,43 +1,42 @@
-name: Java Selenium CI
+name: CI Workflow
 
 on:
   pull_request:
-    branches: [ main ]
+    branches:
+      - main  # Adjust to your default branch if necessary
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Running on the latest Ubuntu VM
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      # 1. Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      # 2. Set up JDK 8 with the Temurin distribution (AdoptOpenJDK's new name)
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          java-version: '8'  # Specify the version of JDK
+          distribution: 'temurin'  # Use 'temurin' instead of 'adoptopenjdk'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      # 3. Install Maven (using a separate action)
+      - name: Set up Maven
+        uses: actions/setup-maven@v2
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          maven-version: '3.8.1'  # Specify your Maven version here
 
-      - name: Install Firefox and GeckoDriver
+      # 4. Install Firefox
+      - name: Install Firefox
         run: |
-          sudo apt update
-          sudo apt install -y firefox
-          firefox --version
-          wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
-          tar -xzf geckodriver-linux64.tar.gz
-          sudo mv geckodriver /usr/local/bin/
-          geckodriver --version
+          sudo apt-get update
+          sudo apt-get install -y firefox
 
-      - name: Build with Maven
-        run: mvn clean install
+      # 5. Install dependencies (Maven)
+      - name: Install dependencies (Maven)
+        run: mvn install
 
-      - name: Run Selenium Tests
+      # 6. Run TestNG tests using Maven
+      - name: Run TestNG tests
         run: mvn test
